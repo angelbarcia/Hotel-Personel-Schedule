@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Turnos - Recepción Hotel</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" integrity="sha512-GsLlZN/3F2ErC5ifS5QtgpiJtWd43JWSuIgh7mbzZ8zBps+dvLusV+eNQATqgA/HdeKFVgA5v3S/cIrLF7QnIg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</head>
+<body>
+<header>
+    <h1>Gestión de Turnos de Recepción</h1>
+    <nav>
+        <ul>
+            <li><a href="#" class="active" id="nav-calendar">Calendario</a></li>
+            <li><a href="#" id="nav-staff">Personal</a></li>
+            <li><a href="#" id="nav-settings">Configuración</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <!-- Vista de Calendario -->
+    <section id="calendar-view" class="active-view">
+        <div class="controls">
+            <div class="month-selector">
+                <button id="prev-month">&lt;</button>
+                <h2 id="current-month">Abril 2025</h2>
+                <button id="next-month">&gt;</button>
+            </div>
+            <div class="actions">
+                <button id="auto-schedule" title="Asignar turnos automáticamente">Autocompletar Turnos</button>
+                <button id="clear-schedule" class="danger" title="Eliminar todos los turnos del mes">Limpiar Turnos</button>
+                <button id="export-pdf">Exportar a PDF</button>
+                <button id="print-schedule">Imprimir</button>
+                <button id="export-schedule">Exportar</button>
+
+            </div>
+        </div>
+
+        <div class="calendar-legend">
+            <div class="legend-item"><span class="shift-code morning">M</span> Mañana</div>
+            <div class="legend-item"><span class="shift-code evening">T</span> Tarde</div>
+            <div class="legend-item"><span class="shift-code night">N</span> Noche</div>
+            <div class="legend-item"><span class="shift-code split">P</span> Partido</div>
+            <div class="legend-item"><span class="shift-code vacation">V</span> Vacaciones</div>
+        </div>
+
+        <div id="grid-calendar-container">
+            <table id="grid-calendar">
+                <!-- Generado dinámicamente con JavaScript -->
+            </table>
+        </div>
+    </section>
+
+    <!-- Vista de Personal -->
+    <section id="staff-view" class="hidden-view">
+        <h2>Gestión de Personal</h2>
+        <button id="add-staff">Añadir Empleado</button>
+
+        <table id="staff-table">
+            <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Contrato</th>
+                <th>Disponibilidad</th>
+                <th>Días</th>
+                <th>Acciones</th>
+            </tr>
+            </thead>
+            <tbody>
+            <!-- Generado dinámicamente con JavaScript -->
+            </tbody>
+        </table>
+    </section>
+
+    <!-- Vista de Configuración -->
+    <section id="settings-view" class="hidden-view">
+        <h2>Configuración de Turnos</h2>
+        <form id="shift-settings">
+            <div class="form-group">
+                <label for="morning-start">Horario Mañana (M) - Inicio:</label>
+                <input type="time" id="morning-start" value="07:00">
+            </div>
+            <div class="form-group">
+                <label for="morning-end">Horario Mañana (M) - Fin:</label>
+                <input type="time" id="morning-end" value="15:00">
+            </div>
+            <div class="form-group">
+                <label for="evening-start">Horario Tarde (T) - Inicio:</label>
+                <input type="time" id="evening-start" value="15:00">
+            </div>
+            <div class="form-group">
+                <label for="evening-end">Horario Tarde (T) - Fin:</label>
+                <input type="time" id="evening-end" value="23:00">
+            </div>
+            <div class="form-group">
+                <label for="night-start">Horario Noche (N) - Inicio:</label>
+                <input type="time" id="night-start" value="23:00">
+            </div>
+            <div class="form-group">
+                <label for="night-end">Horario Noche (N) - Fin:</label>
+                <input type="time" id="night-end" value="07:00">
+            </div>
+            <div class="form-group">
+                <label for="split-hours">Horario Partido (P):</label>
+                <input type="text" id="split-hours" value="10:00-14:00, 17:00-21:00">
+                <small>Formato: inicio1-fin1, inicio2-fin2</small>
+            </div>
+            <button type="submit">Guardar Configuración</button>
+        </form>
+    </section>
+</main>
+
+<!-- Modal para añadir/editar empleado -->
+<div id="staff-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Añadir Empleado</h2>
+        <form id="staff-form">
+            <div class="form-group">
+                <label for="staff-name">Nombre:</label>
+                <input type="text" id="staff-name" required>
+            </div>
+            <div class="form-group">
+                <label for="contract-hours">Horas contratadas semanales:</label>
+                <input type="number" id="contract-hours" min="1" max="40" value="40" required>
+            </div>
+            <div class="form-group">
+                <label>Disponibilidad para turnos:</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="morning-shift" checked>
+                        <label for="morning-shift">Mañanas (M)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="evening-shift" checked>
+                        <label for="evening-shift">Tardes (T)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="night-shift" checked>
+                        <label for="night-shift">Noches (N)</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="split-shift" checked>
+                        <label for="split-shift">Partido (P)</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Días disponibles:</label>
+                <div class="checkbox-group days">
+                    <div>
+                        <input type="checkbox" id="monday" checked>
+                        <label for="monday">Lun</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="tuesday" checked>
+                        <label for="tuesday">Mar</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="wednesday" checked>
+                        <label for="wednesday">Mié</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="thursday" checked>
+                        <label for="thursday">Jue</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="friday" checked>
+                        <label for="friday">Vie</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="saturday" checked>
+                        <label for="saturday">Sáb</label>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="sunday" checked>
+                        <label for="sunday">Dom</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="notes">Notas adicionales:</label>
+                <textarea id="notes"></textarea>
+            </div>
+
+            <button type="submit">Guardar</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal para asignar turno -->
+<div id="shift-modal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Asignar Turno</h2>
+        <form id="shift-form">
+            <div class="form-group">
+                <label for="shift-date">Fecha:</label>
+                <input type="text" id="shift-date" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="shift-staff">Empleado:</label>
+                <input type="text" id="shift-staff" readonly>
+            </div>
+
+            <div class="form-group">
+                <label for="shift-type">Tipo de turno:</label>
+                <select id="shift-type">
+                    <option value="morning">Mañana (M)</option>
+                    <option value="evening">Tarde (T)</option>
+                    <option value="night">Noche (N)</option>
+                    <option value="split">Partido (P)</option>
+                    <option value="vacation">Vacaciones (V)</option>
+                </select>
+            </div>
+
+            <button type="submit">Asignar</button>
+            <button type="button" id="remove-shift" class="danger">Eliminar Turno</button>
+        </form>
+    </div>
+</div>
+
+<script src="js/main.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/staff.js"></script>
+</body>
+</html>
